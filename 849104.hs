@@ -18,6 +18,8 @@ testData = [AlbumDetails "Greatest Hits" "Queen" 1981 6300000, AlbumDetails "Gol
 --
 --
 
+albumsToString :: [Album] -> [Char]
+albumsToString listOfAlbums = show listOfAlbums
 
 
 
