@@ -18,10 +18,20 @@ testData = [AlbumDetails "Greatest Hits" "Queen" 1981 6300000, AlbumDetails "Gol
 --
 --
 
-albumsToString :: [Album] -> [Char]
-albumsToString listOfAlbums = show listOfAlbums
+albumsToString :: [Album] -> IO()
+albumsToString listOfAlbums = putStrLn (show listOfAlbums)
 
+top10 :: [Album] -> [Album]
+top10 listOfAlbums = take 10 listOfAlbums
 
+albumRelease :: [Album] -> Int -> Int -> [Album]
+albumRelease listOfAlbums fromY toY  = [(AlbumDetails albumName artist year sales) | (AlbumDetails albumName artist year sales) <- listOfAlbums, year >= fromY && year <= toY]
+
+albumTitles :: [Album] -> Char -> [Album]
+albumTitles listOfAlbums prefix = [(AlbumDetails albumName artist year sales) | (AlbumDetails albumName artist year sales) <- listOfAlbums, head albumName == prefix]
+
+albumTotalSales :: [Album] -> String -> Int
+albumTotalSales listOfAlbums artistName = foldr (+) 0 [sales | (AlbumDetails albumName artist year sales) <- listOfAlbums, artist == artistName]
 
 
 
