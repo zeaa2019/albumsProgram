@@ -73,63 +73,71 @@ testData = [(Album "Greatest Hits" "Queen" 1981 6300000),
            (Album "Graceland" "Paul Simon" 1986 2500000),
            (Album "Ladies & Gentlemen: The Best of" "George Michael" 1998 2500000)]
 
---Extra functions
 
-removeAlbum :: [Album] -> [Album]
-removeAlbum listOfAlbums = init listOfAlbums
 
-getListOfArtists :: [Album] -> [String]
-getListOfArtists listOfAlbums = [artist | (Album albumName artist year sales) <- listOfAlbums]
+ removeAlbum :: [Album] -> [Album]
+ removeAlbum listOfAlbums = init listOfAlbums
 
-countNumAlbums :: String -> [Album] -> Int
-countNumAlbums artist listOfAlbums = length (filter (==artist) (getListOfArtists listOfAlbums))
+ getListOfArtists :: [Album] -> [String]
+ getListOfArtists listOfAlbums = nub [artist | (Album albumName artist year sales) <- listOfAlbums]
 
-deleteAlbum :: Album -> [Album] -> [Album]
-deleteAlbum albumToDelete listOfAlbums = delete albumToDelete listOfAlbums
+ getArtists :: [Album] -> [String]
+ getArtists listOfAlbums = [artist | (Album albumName artist year sales) <- listOfAlbums]
 
-sortBySales :: [Album] -> [Album]
-sortBySales = reverse . sortBy (comparing sales)
+ countNumAlbums :: String -> Int
+ countNumAlbums artist = length (filter (==artist) (getArtists testData))
 
-getAlbum :: String -> String -> [Album] -> Album
-getAlbum artistName nameOfAlbum listOfAlbums = head [(Album albumName artist year sales) | (Album albumName artist year sales) <- listOfAlbums, artistName == artist && nameOfAlbum == albumName]
+ countNumAlbumsList :: [Album] -> [Int]
+ countNumAlbumsList listOfAlbums = map countNumAlbums (getListOfArtists listOfAlbums)
 
-addAlbum :: Album -> [Album] -> [Album]
-addAlbum (Album albumName artist year sales) (x:xs) = (Album albumName artist year sales) : (x:xs)
+ listOfArtists :: [Album] -> [String]
+ listOfArtists listOfAlbums = nub [artist | (Album albumName artist year sales) <- listOfAlbums]
 
-createNewAlbum :: String -> String -> Int -> Int -> Album
-createNewAlbum newAlbumName newAlbumArtist newAlbumYear newAlbumSales = (Album newAlbumName newAlbumArtist newAlbumYear newAlbumSales)
+ deleteAlbum :: Album -> [Album] -> [Album]
+ deleteAlbum albumToDelete listOfAlbums = delete albumToDelete listOfAlbums
 
-getSales :: String -> [Album] -> Int
-getSales nameOfAlbum listOfAlbums = head [sales | (Album albumName artist year sales) <- listOfAlbums, nameOfAlbum == albumName]
+ sortBySales :: [Album] -> [Album]
+ sortBySales = reverse . sortBy (comparing sales)
 
-getYear :: String -> [Album] -> Int
-getYear nameOfAlbum listOfAlbums = head [year | (Album albumName artist year sales) <- listOfAlbums, nameOfAlbum == albumName]
+ getAlbum :: String -> String -> [Album] -> Album
+ getAlbum artistName nameOfAlbum listOfAlbums = head [(Album albumName artist year sales) | (Album albumName artist year sales) <- listOfAlbums, artistName == artist && nameOfAlbum == albumName]
 
---Functionality Code
-albumsToString :: [Album] -> IO()
-albumsToString listOfAlbums = putStrLn (show listOfAlbums)
+ addAlbum :: Album -> [Album] -> [Album]
+ addAlbum (Album albumName artist year sales) (x:xs) = (Album albumName artist year sales) : (x:xs)
 
-top10 :: [Album] -> [Album]
-top10 listOfAlbums = take 10 listOfAlbums
+ createNewAlbum :: String -> String -> Int -> Int -> Album
+ createNewAlbum newAlbumName newAlbumArtist newAlbumYear newAlbumSales = (Album newAlbumName newAlbumArtist newAlbumYear newAlbumSales)
 
-albumRelease :: [Album] -> Int -> Int -> [Album]
-albumRelease listOfAlbums fromY toY  = [(Album albumName artist year sales) | (Album albumName artist year sales) <- listOfAlbums, year >= fromY && year <= toY]
+ getSales :: String -> [Album] -> Int
+ getSales nameOfAlbum listOfAlbums = head [sales | (Album albumName artist year sales) <- listOfAlbums, nameOfAlbum == albumName]
 
-albumTitles :: [Album] -> Char -> [Album]
-albumTitles listOfAlbums prefix = [(Album albumName artist year sales) | (Album albumName artist year sales) <- listOfAlbums, head albumName == prefix]
+ getYear :: String -> [Album] -> Int
+ getYear nameOfAlbum listOfAlbums = head [year | (Album albumName artist year sales) <- listOfAlbums, nameOfAlbum == albumName]
 
-albumTotalSales :: [Album] -> String -> Int
-albumTotalSales listOfAlbums artistName = foldr (+) 0 [sales | (Album albumName artist year sales) <- listOfAlbums, artist == artistName]
+ --Functionality Code
+ albumsToString :: [Album] -> IO()
+ albumsToString listOfAlbums = putStrLn (show listOfAlbums)
 
--- numberOfAlbums :: [Album] -> [String]
--- numberOfAlbums listOfAlbums = zip (getListOfArtists listOfAlbums) (countNumAlbums listOfAlbums)
+ top10 :: [Album] -> [Album]
+ top10 listOfAlbums = take 10 listOfAlbums
 
-addRemoveAlbum :: Album -> [Album] -> [Album]
-addRemoveAlbum newAlbum listOfAlbums = sortBySales (addAlbum newAlbum (removeAlbum listOfAlbums))
+ albumRelease :: [Album] -> Int -> Int -> [Album]
+ albumRelease listOfAlbums fromY toY  = [(Album albumName artist year sales) | (Album albumName artist year sales) <- listOfAlbums, year >= fromY && year <= toY]
 
-increaseSales :: String -> String -> Int -> [Album] -> [Album]
-increaseSales artistName nameOfAlbum additionalSales listOfAlbums = sortBySales (addAlbum (createNewAlbum nameOfAlbum artistName (getYear nameOfAlbum listOfAlbums) ((getSales nameOfAlbum listOfAlbums) + additionalSales)) (deleteAlbum (getAlbum artistName nameOfAlbum listOfAlbums) listOfAlbums))
+ albumTitles :: [Album] -> Char -> [Album]
+ albumTitles listOfAlbums prefix = [(Album albumName artist year sales) | (Album albumName artist year sales) <- listOfAlbums, head albumName == prefix]
 
+ albumTotalSales :: [Album] -> String -> Int
+ albumTotalSales listOfAlbums artistName = foldr (+) 0 [sales | (Album albumName artist year sales) <- listOfAlbums, artist == artistName]
+
+ getNumAlbumsArtist:: [Album] -> [(String, Int)]
+ getNumAlbumsArtist listOfAlbums = zip (getListOfArtists listOfAlbums) (countNumAlbumsList (nub listOfAlbums))
+
+ addRemoveAlbum :: Album -> [Album] -> [Album]
+ addRemoveAlbum newAlbum listOfAlbums = sortBySales (addAlbum newAlbum (removeAlbum listOfAlbums))
+
+ increaseSales :: String -> String -> Int -> [Album] -> [Album]
+ increaseSales artistName nameOfAlbum additionalSales listOfAlbums = sortBySales (addAlbum (createNewAlbum nameOfAlbum artistName (getYear nameOfAlbum listOfAlbums) ((getSales nameOfAlbum listOfAlbums) + additionalSales)) (deleteAlbum (getAlbum artistName nameOfAlbum listOfAlbums) listOfAlbums))
 
 
 -- Demo function to test basic functionality (without persistence - i.e.
