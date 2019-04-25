@@ -4,25 +4,18 @@
 -- 849104
 --
 
-
---Types
+--Modules imported
 import Data.Char
 import Data.List
-import Data.List (sortBy)
-import Data.Ord (comparing)
+import Data.Ord 
 import Text.Printf
 
-                
--- data Album = Album { albumName :: String,
-                     -- artistName :: String,
-                     -- year :: Int,
-                     -- sales :: Int
-                   -- } deriving (Eq,Ord,Show,Read)
-                   
+
+--Algebriac Type Defined                  
 data Album = Album String String Int Int
             deriving (Eq, Ord, Show, Read)
    
-
+--List of the 50 bestselling albums in the UK
 testData :: [Album]
 testData =[(Album  "Greatest Hits"                                 "Queen"             1981  6300000),
            (Album  "Gold: Greatest Hits"                           "ABBA"              1992  5400000), 
@@ -75,75 +68,108 @@ testData =[(Album  "Greatest Hits"                                 "Queen"      
            (Album  "Graceland"                                     "Paul Simon"        1986  2500000),
            (Album  "Ladies & Gentlemen: The Best of"               "George Michael"    1998  2500000)]
 
+-------------------
 -- Helper functions
+-------------------
 
+--Removes the last album in a list of albums
 removeAlbum :: [Album] -> [Album]
 removeAlbum listOfAlbums = init listOfAlbums
 
+--Returns a list of artists with no duplicates
 getListOfArtists :: [Album] -> [String]
 getListOfArtists listOfAlbums = nub [artist | (Album albumName artist year sales) <- listOfAlbums]
 
+--Return a list of artists 
 getArtists :: [Album] -> [String]
 getArtists listOfAlbums = [artist | (Album albumName artist year sales) <- listOfAlbums]
 
+--Counts the number of albums a artist has by filtering the artist list by the name of the artist and then looking at the length of that list
 countNumAlbums :: String -> Int
 countNumAlbums artist = length (filter (==artist) (getArtists testData))
 
+--Applies the countNumAlbums function to a list artist names
 countNumAlbumsList :: [Album] -> [Int]
 countNumAlbumsList listOfAlbums = map countNumAlbums (getListOfArtists listOfAlbums)
 
-listOfArtists :: [Album] -> [String]
-listOfArtists listOfAlbums = nub [artist | (Album albumName artist year sales) <- listOfAlbums]
-
+--Deletes a given album from a list of albums
 deleteAlbum :: Album -> [Album] -> [Album]
 deleteAlbum albumToDelete listOfAlbums = delete albumToDelete listOfAlbums
-         
-sortF :: Album -> Album -> Ordering
-sortF (Album albumNameA artistA yearA salesA) (Album albumNameB artistB yearB salesB) | salesA > salesB = LT
-                                                                                      | otherwise       = GT
 
+--Order album by sales value in descending order       
+insertByF :: Album -> Album -> Ordering
+insertByF (Album albumNameA artistA yearA salesA) (Album albumNameB artistB yearB salesB) | salesA > salesB = LT
+                                                                                          | otherwise       = GT
+
+--Get album by artistName and albumName
 getAlbum :: String -> String -> [Album] -> Album
 getAlbum artistName nameOfAlbum listOfAlbums = head [(Album albumName artist year sales) | (Album albumName artist year sales) <- listOfAlbums, artistName == artist && nameOfAlbum == albumName]
 
+--Adds new album to list based on sales figure
 addAlbum :: Album -> [Album] -> [Album]
-addAlbum newAlbum listOfAlbums = insertBy sortF newAlbum listOfAlbums
+addAlbum newAlbum listOfAlbums = insertBy insertByF newAlbum listOfAlbums
 
+--Creates a new album
 createNewAlbum :: String -> String -> Int -> Int -> Album
 createNewAlbum newAlbumName newAlbumArtist newAlbumYear newAlbumSales = (Album newAlbumName newAlbumArtist newAlbumYear newAlbumSales)
 
+--Returns the sales figure of given album
 getSales :: String -> [Album] -> Int
 getSales nameOfAlbum listOfAlbums = head [sales | (Album albumName artist year sales) <- listOfAlbums, nameOfAlbum == albumName]
 
+--Returns the release year of a gievn album
 getYear :: String -> [Album] -> Int
 getYear nameOfAlbum listOfAlbums = head [year | (Album albumName artist year sales) <- listOfAlbums, nameOfAlbum == albumName]
 
--- Functionality Code
+--Gives a list of album names
+getListOfAlbumNames :: [Album] -> [String]
+getListOfAlbumNames listOfAlbums = [albumName | (Album albumName artist year sales) <- listOfAlbums]
 
+--This function check is a value is a digit 
+numCheck :: String -> Bool
+numCheck value = foldr (&&) True (map isDigit (value))
+
+--Seperate print function for list of pairs
+printPairs :: [(String, Int)] -> String
+printPairs  []                         = []
+printPairs ((artistName, numSales):xs) = printf "%20s" artistName ++ printf "%20d" numSales ++ "\n" ++ printPairs xs
+
+---------------------
+-- Functionality Code
+---------------------
+
+--This function coverts a list of albums to a String
 albumsToString :: [Album] -> String
 albumsToString []                                       = []
-albumsToString ((Album albumName artist year sales):xs) = printf "%s " albumName ++ printf "%s " artist ++ printf "%d " year ++ printf "%d " sales ++ albumsToString xs
+albumsToString ((Album albumName artist year sales):xs) = printf "%40s" albumName ++ printf "%30s" artist ++ printf "%30d" year ++ printf "%30d" sales ++ "\n" ++ albumsToString xs
 
+--Returns the first 10 albums in a list of albums
 top10 :: [Album] -> [Album]
 top10 listOfAlbums = take 10 listOfAlbums
 
+--Returns list of albums released in beetween two given years
 albumRelease :: [Album] -> Int -> Int -> [Album]
 albumRelease listOfAlbums fromY toY  = [(Album albumName artist year sales) | (Album albumName artist year sales) <- listOfAlbums, year >= fromY && year <= toY]
 
+--Returns a list of albums with given prefix
 albumTitles :: [Album] -> String -> [Album]
 albumTitles listOfAlbums prefix = [(Album albumName artist year sales) | (Album albumName artist year sales) <- listOfAlbums, take (length prefix) albumName == prefix]
 
+--Caculates the total sales figure of a given artist
 albumTotalSales :: [Album] -> String -> Int
 albumTotalSales listOfAlbums artistName = foldr (+) 0 [sales | (Album albumName artist year sales) <- listOfAlbums, artist == artistName]
 
+--Returns a list of pairs that includes artist name and how many albums they have in the top 50
 getNumAlbumsArtist:: [Album] -> [(String, Int)]
 getNumAlbumsArtist listOfAlbums = zip (getListOfArtists listOfAlbums) (countNumAlbumsList (nub listOfAlbums))
 
+--Removes the lowest selling album and add a new one to the list
 addRemoveAlbum :: Album -> [Album] -> [Album]
 addRemoveAlbum newAlbum listOfAlbums = addAlbum newAlbum (removeAlbum listOfAlbums)
 
+--Increases the sales figure of a given artist
 increaseSales :: String -> String -> Int -> [Album] -> [Album]
 increaseSales artistName nameOfAlbum additionalSales listOfAlbums = addAlbum (createNewAlbum nameOfAlbum artistName (getYear nameOfAlbum listOfAlbums) ((getSales nameOfAlbum listOfAlbums) + additionalSales)) (deleteAlbum (getAlbum artistName nameOfAlbum listOfAlbums) listOfAlbums)
-
 
 -- Demo function to test basic functionality (without persistence - i.e.
 -- testData doesn't change and nothing is saved/loaded to/from albums file).
@@ -154,82 +180,17 @@ demo 2  = putStrLn (albumsToString (top10 testData))
 demo 3  = putStrLn (albumsToString (albumRelease testData 2000 2008))
 demo 4  = putStrLn (albumsToString (albumTitles testData "Th"))
 demo 5  = print (albumTotalSales testData "Queen")
-demo 6  = print (getNumAlbumsArtist testData)
+demo 6  = putStrLn (printPairs(getNumAlbumsArtist testData))
 demo 7  = putStrLn (albumsToString (addRemoveAlbum(Album "Progress" "Take That" 2010 2700000) testData))
 demo 8  = putStrLn (albumsToString (increaseSales "Adele" "21" 400000 testData))
 
-getAlbumYear :: [Album] -> IO()
-getAlbumYear albums = do
-              putStrLn("Enter the year from")
-              fromY <- getLine
-              let yearFrom = read fromY :: Int
-              putStrLn("Enter the year to")
-              toY <- getLine
-              let yearTo = read toY :: Int
-              putStrLn (albumsToString (albumRelease albums yearFrom yearTo))
-              
-getAlbumPrefix :: [Album] -> IO()
-getAlbumPrefix albums = do
-              putStrLn("Enter album name prefix")
-              albumPrefix <- getLine
-              putStrLn (albumsToString (albumTitles albums albumPrefix))
-              
-getArtistName :: [Album] -> IO()
-getArtistName albums = do
-               putStrLn("Enter artist name")
-               artistName <- getLine
-               print (albumTotalSales albums artistName)
-               
-getNewAlbum :: [Album] -> IO()
-getNewAlbum albums = do
-              putStrLn("Enter name of album")
-              albumName <- getLine
-              putStrLn("Enter name of artist")
-              artistName <- getLine
-              putStrLn("Enter year album was released")
-              albumRelease <- getLine
-              let year = read albumRelease :: Int
-              putStrLn("Enter number of sales")
-              numSales <- getLine
-              let sales = read numSales :: Int
-              let newAlbum = createNewAlbum albumName artistName year sales
-              putStrLn (albumsToString(addRemoveAlbum newAlbum albums))
-              
-              
-increaseSalesOfArtist :: [Album] -> IO()
-increaseSalesOfArtist albums = do
-              putStrLn("Enter name of album")
-              albumName <- getLine
-              putStrLn("Enter name of artist")
-              artistName <- getLine
-              putStrLn("Enter number of additional sales")
-              numSales <- getLine
-              let sales = read numSales :: Int
-              putStrLn (albumsToString(increaseSales artistName albumName sales albums))
-              
-  
-  
 --
 --
 -- Your user interface (and loading/saving) code goes here
 
-executeFunction :: String -> [Album] -> IO ()
-executeFunction "1" albums = putStrLn (albumsToString albums)
-executeFunction "2" albums = putStrLn (albumsToString (top10 albums))
-executeFunction "3" albums = getAlbumYear albums
-executeFunction "4" albums = getAlbumPrefix albums
-executeFunction "5" albums = getArtistName albums
-executeFunction "6" albums = print (getNumAlbumsArtist albums)
-executeFunction "7" albums = getNewAlbum albums
-executeFunction "8" albums = increaseSalesOfArtist albums
-executeFunction  _ albums  = main 
-
-
-main :: IO ()
-main = do
-   albums <- readFile "albums.txt"
-   let listOfAlbums = read albums :: [Album]
-   putStrLn (albumsToString listOfAlbums)
+---Menu display where user selects function they would like excecuted
+menu :: [Album] -> IO()
+menu listOfAlbums = do
    putStrLn ("---------------------------------------")
    putStrLn ("---------------------------------------")
    putStrLn ("-------Album Database Program----------")
@@ -243,9 +204,145 @@ main = do
    putStrLn ("6 - Pairs of Artist and Number of Albums")
    putStrLn ("7 - Remove lowest album and add new album")
    putStrLn ("8 - Increase sale figure of album")
+   putStrLn ("9 - Save & Exit Program")
    putStrLn ("----------------------------------------")
    putStrLn ("Enter no: ")
    choice <- getLine
    executeFunction choice listOfAlbums
    
 
+--Calls on function based on user input  
+executeFunction :: String -> [Album] -> IO ()
+executeFunction "1" albums = displayAlbums albums
+executeFunction "2" albums = displayTop10 albums
+executeFunction "3" albums = displayAlbumsByYear albums
+executeFunction "4" albums = displayAlbumByPrefix albums
+executeFunction "5" albums = displaySalesByArtist albums
+executeFunction "6" albums = displayNumAlbumsPerArtist albums
+executeFunction "7" albums = addNewAlbum albums
+executeFunction "8" albums = increaseSalesOfArtist albums
+executeFunction "9" albums = writeFile "albums.txt" (show albums)
+executeFunction  _ albums  = main 
+
+--Loads and reads 'albums.txt' file
+main :: IO ()
+main = do
+   albums <- readFile "albums.txt"
+   let listOfAlbums = read albums :: [Album]
+   putStrLn (albumsToString listOfAlbums)
+   menu listOfAlbums
+   
+--Displays a list of albums   
+displayAlbums :: [Album] -> IO()
+displayAlbums albums = do
+                   putStrLn (albumsToString albums)
+                   menu albums
+
+--Displays top 10 albums                 
+displayTop10 :: [Album] -> IO()
+displayTop10 albums = do
+                   putStrLn (albumsToString (top10 albums))
+                   menu albums
+
+--Displays how many albums each artist has in the top 50                  
+displayNumAlbumsPerArtist :: [Album] -> IO()
+displayNumAlbumsPerArtist albums = do
+                              putStrLn (printPairs(getNumAlbumsArtist albums))
+                              menu albums
+  
+--Display albums released in beetween two given years
+displayAlbumsByYear :: [Album] -> IO()
+displayAlbumsByYear albums = do
+              putStrLn("Enter the year from")
+              fromY <- getLine
+              putStrLn("Enter the year to")
+              toY <- getLine
+              if (numCheck fromY && numCheck toY)
+                  then do
+                    let yearFrom = read fromY :: Int
+                    let yearTo = read toY :: Int
+                    if (albumRelease albums yearFrom yearTo) == [] 
+                      then do
+                        putStrLn("There were no albums released beetween these years, try again")
+                        displayAlbumsByYear albums
+                      else do
+                        putStrLn (albumsToString (albumRelease albums yearFrom yearTo))
+                        menu albums
+                  else do 
+                    putStrLn("One of the years you have entered is invalid, try again")
+                    displayAlbumsByYear albums
+
+--Displays albums with given prefix                                     
+displayAlbumByPrefix :: [Album] -> IO()
+displayAlbumByPrefix albums = do
+              putStrLn("Enter album name prefix")
+              albumPrefix <- getLine
+              if (albumTitles albums albumPrefix) == []
+                  then do
+                     putStrLn ("---------------------------------------")
+                     putStrLn("There are no albums with this prefix, try again")
+                     displayAlbumByPrefix albums
+                  else do
+                     putStrLn ("---------------------------------------")
+                     putStrLn (albumsToString (albumTitles albums albumPrefix))
+                     menu albums
+                     
+--Display sales figure of given artist
+displaySalesByArtist :: [Album] -> IO()
+displaySalesByArtist albums = do
+               putStrLn("Enter artist name")
+               artistName <- getLine
+               if elem artistName (getListOfArtists(albums))
+                  then do 
+                       putStrLn ("---------------------------------------")
+                       print (albumTotalSales albums artistName)
+                       menu albums
+                  else do 
+                       putStrLn ("Artist name not found, try again")
+                       displaySalesByArtist albums
+
+--Adds new album and displays updated list                              
+addNewAlbum :: [Album] -> IO()
+addNewAlbum albums = do
+              putStrLn("Enter name of album")
+              albumName <- getLine
+              putStrLn("Enter name of artist")
+              artistName <- getLine
+              putStrLn("Enter year album was released")
+              albumRelease <- getLine
+              putStrLn("Enter number of sales")
+              numSales <- getLine
+              if (numCheck numSales && numCheck albumRelease)
+              then do
+                let year = read albumRelease :: Int
+                let sales = read numSales :: Int
+                let newAlbum = createNewAlbum albumName artistName year sales
+                putStrLn ("---------------------------------------")
+                putStrLn (albumsToString(addRemoveAlbum newAlbum albums))
+                menu albums
+              else do
+                putStrLn("The year and sales value must be a number, try again")
+                addNewAlbum albums
+
+--Increases sales figure of given artist and dispalys updated list                                
+increaseSalesOfArtist :: [Album] -> IO()
+increaseSalesOfArtist albums = do
+              putStrLn("Enter name of album")
+              albumName <- getLine
+              putStrLn("Enter name of artist")
+              artistName <- getLine
+              putStrLn("Enter number of additional sales")
+              numSales <- getLine
+              if (numCheck numSales)
+               then do
+                 let sales = read numSales :: Int
+                 if elem artistName (getListOfArtists albums) && elem albumName (getListOfAlbumNames albums) 
+                   then do
+                      putStrLn (albumsToString(increaseSales artistName albumName sales albums))
+                      menu albums
+                   else do
+                      putStrLn ("Album not found, try again")
+                      increaseSalesOfArtist albums
+               else do 
+                  putStrLn ("Number of sales must be a number, enter album details again")
+                  increaseSalesOfArtist albums
